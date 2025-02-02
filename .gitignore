@@ -3,6 +3,8 @@ __pycache__/
 *.py[cod]
 *$py.class
 Data/
+chroma/
+
 new_env_name/
 # C extensions
 *.so

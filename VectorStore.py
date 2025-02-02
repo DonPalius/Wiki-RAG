@@ -49,7 +49,7 @@ class VectorStore:
     def load_dataframe(self, path):
         """Load DataFrame from file based on file extension."""
         if path.endswith('.csv'):
-            return pd.read_csv(path).head()
+            return pd.read_csv(path).head(1)
         elif path.endswith('.parquet'):
             return pd.read_parquet(path)
         elif path.endswith('.pickle') or path.endswith('.pkl'):
@@ -101,14 +101,18 @@ class VectorStore:
         # Create new column for chunk IDs
         df['chunk_ids'] = None
         
-        for idx, doc in tqdm(df.iterrows(), desc="Processing Document Chunks", total=len(df)):
+
+        # for idx, doc in tqdm(df.iterrows(), desc="Processing Document Chunks", total=len(df)):
+        for idx, doc in df.iterrows():
+            print(doc['title'])
             title = doc['title']
             chunk_ids = []
             documents = []
             metadatas = []
-            
+            print(len(doc['chunked_text']))
             # Process each chunk in the document
-            for content in doc['chunked_text']:
+            for content in tqdm(doc['chunked_text'], desc="Processing Chunks", leave=False):
+
                 chunk_id = str(uuid4())
                 chunk_ids.append(chunk_id)
                 documents.append(content)
@@ -158,7 +162,7 @@ class VectorStore:
                 documents=[row['title']],
                 metadatas=[{
                     "Title": row['title'],
-                    "chunk_ids": row['chunk_ids']  # Store associated chunk IDs in metadata
+                    "chunk_ids": ",".join(row['chunk_ids'])  # Store associated chunk IDs in metadata
                 }]
             )
             
@@ -176,12 +180,13 @@ class VectorStore:
             use_openai_embedding (bool): Whether to compute OpenAI embeddings for document chunks.
             
         Returns:
-            pandas.DataFrame: DataFrame with both chunk_ids and keyword_id columns.
+            tuple: (final_df, doc_collection, keyword_collection)
         """
         # First process documents to get chunk IDs (and optionally compute embeddings)
         df_with_chunks = self.create_document_store(chunked_docs, use_openai_embedding=use_openai_embedding)
-        
         # Then process keywords using the chunk IDs
         final_df = self.create_keyword_store(df_with_chunks)
         
+        # Return the final DataFrame along with both vector store objects.
         return final_df
+
