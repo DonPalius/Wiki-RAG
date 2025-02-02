@@ -29,8 +29,6 @@ Wiki-RAG is a Retrieval-Augmented Generation (RAG) system designed to enhance th
   Handles downloading, preprocessing, and parsing of the Wikipedia dump.
 - `wikipedia_dump_processor.py`  
   Contains the `WikipediaDumpProcessor` class for dump extraction and processing (uses WikiExtractor).
-- `test.ipynb`  
-  A Jupyter Notebook for testing and debugging the system.
 - `README.md`  
   This file – detailed instructions for setup and usage.
 
@@ -49,8 +47,8 @@ Wiki-RAG is a Retrieval-Augmented Generation (RAG) system designed to enhance th
 
 1. **Clone the Repository:**
    ```bash
-   git clone https://github.com/your-repo/wiki-rag.git
-   cd wiki-rag
+   git clone git@github.com:DonPalius/Wiki-RAG.git
+   cd Wiki-RAG
    ```
 
 2. **Install Dependencies:**
