@@ -25,12 +25,9 @@ Wiki-RAG is a Retrieval-Augmented Generation (RAG) system designed to enhance th
   Manages initialization and population of vector stores for documents and keywords.
 - `search.py`  
   Provides search, retrieval, and re-ranking functionalities.
-- `wiki_dump.py`  
-  Handles downloading, preprocessing, and parsing of the Wikipedia dump.
 - `wikipedia_dump_processor.py`  
   Contains the `WikipediaDumpProcessor` class for dump extraction and processing (uses WikiExtractor).
-- `README.md`  
-  This file – detailed instructions for setup and usage.
+
 
 ## How It Works
 

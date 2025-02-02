@@ -75,7 +75,7 @@ if st.button("Scarica e carica dump Wikipedia"):
         vs = VectorStore(
             doc_collection_name="wikipedia_docs",
             keyword_collection_name="wikipedia_keywords",
-            data_path="Wikipedia.csv",
+            data_path="Data/Wikipedia.csv",
             reset=True
         )
         # Update session state with the separate vector stores.

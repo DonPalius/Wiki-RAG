@@ -88,7 +88,7 @@ class WikipediaDumpProcessor:
         print(f"Chunking text in DataFrame column '{text_column}'...")
         df['chunked_text'] = df[text_column].apply(lambda x: self.chunk_text(x) if isinstance(x, str) else [])
         df[df['chunked_text'].map(len) > 0]
-        df.to_csv('Wikipedia.csv')
+        df.to_csv('Data/Wikipedia.csv')
         print("Chunking completed. Returning updated DataFrame.")
         return df.head(1)
 
