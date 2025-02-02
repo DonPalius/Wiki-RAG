@@ -1,45 +1,49 @@
-```markdown
 # Wiki-RAG
 
 Wiki-RAG is a Retrieval-Augmented Generation (RAG) system designed to enhance the process of querying and generating responses based on the Italian Wikipedia. By combining advanced retrieval techniques with state-of-the-art natural language generation, Wiki-RAG provides precise, contextually relevant answers for Italian-language queries.
 
 ## Features
 
-- **Retrieval-Augmented Generation:** Leverages both document retrieval and language generation to produce coherent and informative responses.
-- **Italian Wikipedia Focus:** Tailored to work with Italian-language content, ensuring culturally and contextually accurate results.
-- **Scalable and Efficient:** Optimized for quick retrieval and smooth integration with various applications.
+- **Retrieval-Augmented Generation:** Combines document retrieval and language generation to produce coherent, informative responses.
+- **Italian Wikipedia Focus:** Tailored for Italian-language content to ensure culturally and contextually accurate results.
+- **Dual Vector Store:** Utilizes two vector stores:
+  - **Document Vector Store:** For semantic search over chunked document texts.
+  - **Keyword Vector Store:** For title-based retrieval.
+- **Local LLM Integration:** Interfaces with a local language model (e.g., `meta-llama-3.1-8b-instruct`) via LM Studio.
 
 ## Project Structure
 
 - `requirements.txt`  
-  Lists all the dependencies required for the project.
+  Lists all dependencies required for the project.
 - `app.py`  
   Streamlit interface for interacting with the Wiki-RAG system.
 - `prompt.py`  
-  Contains the prompts used for querying.
+  Contains prompts for querying.
 - `ModelQuery.py`  
-  Handles local model queries via LLM Studio.
+  Handles local model queries via LM Studio.
 - `VectorStore.py`  
-  Initializes and populates the vector stores for documents and keywords.
+  Manages initialization and population of vector stores for documents and keywords.
 - `search.py`  
-  Provides functionalities for search, retrieval, and re-ranking.
+  Provides search, retrieval, and re-ranking functionalities.
 - `wiki_dump.py`  
-  Manages downloading, preprocessing, and parsing of Wikipedia data.
+  Handles downloading, preprocessing, and parsing of the Wikipedia dump.
+- `wikipedia_dump_processor.py`  
+  Contains the `WikipediaDumpProcessor` class for dump extraction and processing (uses WikiExtractor).
 - `test.ipynb`  
   A Jupyter Notebook for testing and debugging the system.
 - `README.md`  
-  Detailed instructions for setting up and running the project.
+  This file – detailed instructions for setup and usage.
 
 ## How It Works
 
 1. **Query Input:**  
-   Users submit a query in Italian via the Streamlit interface or command line.
+   Users submit an Italian query via the Streamlit interface.
 2. **Information Retrieval:**  
-   The system searches Italian Wikipedia using separate vector stores:
-   - A **document vector store** for detailed text chunks.
-   - A **keyword vector store** for title-based retrieval.
-3. **Content Generation:**  
-   The retrieved data is passed to a language model that generates a human-like, comprehensive response.
+   The system uses two vector stores:
+   - **Document Vector Store:** Retrieves relevant document chunks.
+   - **Keyword Vector Store:** Retrieves articles based on titles.
+3. **Response Generation:**  
+   Retrieved content is passed to a local LLM (via LM Studio) to generate a comprehensive answer.
 
 ## Installation
 
@@ -55,42 +59,89 @@ Wiki-RAG is a Retrieval-Augmented Generation (RAG) system designed to enhance th
    ```
 
 3. **Configure Environment Variables:**  
-   Create a `.env` file in the project root with the following content:
+   Create a `.env` file in the project root with the following content (update paths as needed):
    ```env
    OPENAI_API_KEY=your_openai_api_key
+   DUMP_FILE=Data/itwiki-latest-pages-articles1.xml-p1p316052.bz2
+   OUTPUT_DIR=Data
+   BASE_DIR=Data
    ```
 
-## Usage
+## Wikipedia Dump Configuration
 
-### Running the Streamlit Application
+Wiki-RAG is set up to optionally download and process a Wikipedia dump using WikiExtractor. Update these configuration variables in your environment or code (current version) as needed:
 
-Launch the user interface with:
+- **DUMP_URL:**  
+  `https://dumps.wikimedia.org/itwiki/latest/itwiki-latest-pages-articles1.xml-p1p316052.bz2`
+- **DUMP_FILE:**  
+  The local path to your downloaded dump file (e.g., `Data/itwiki-latest-pages-articles1.xml-p1p316052.bz2`).
+- **OUTPUT_DIR:**  
+  The directory where extracted files and CSV outputs will be stored (e.g., `Data`).
+- **BASE_DIR:**  
+  The base directory for extracted files (usually the same as OUTPUT_DIR).
+
+The `WikipediaDumpProcessor` class in `wikipedia_dump_processor.py` handles:
+- **Downloading:** Checks if the dump exists locally; if not, downloads it.
+- **Extraction:** Uses WikiExtractor to convert the dump into JSON files.
+- **Parsing and Chunking:** Converts JSON files to a Pandas DataFrame, splits article text into smaller chunks, and saves the results in `Wikipedia.csv`.
+
+## LM Studio & Local LLM Setup
+
+Wiki-RAG uses LM Studio to interface with a local language model. For example, to use the `meta-llama-3.1-8b-instruct` model:
+
+1. **Download and Install LM Studio:**
+   - Visit [LM Studio](https://lmstudio.ai/) and install the application.
+
+2. **Download the Model:**
+   - Within LM Studio, locate and download the `meta-llama-3.1-8b-instruct` model.
+
+3. **Start the LM Studio Local Server:**
+   - Launch LM Studio and load the model. The default endpoint is typically:
+     ```
+     http://127.0.0.1:1234/v1/chat/completions
+     ```
+
+4. **Configure the Model Query:**
+   - In `app.py`, the local model is initialized as follows:
+     ```python
+     if 'llm' not in st.session_state:
+         st.session_state.llm = ModelQuery("http://127.0.0.1:1234/v1/chat/completions", "meta-llama-3.1-8b-instruct")
+     ```
+
+## Running the Application
+
+### Launching the Streamlit UI
+
+Run the Streamlit interface with:
 ```bash
 streamlit run app.py
 ```
 
-## Wikipedia Dump Configuration
+### Updating the Vector Stores
 
-The project is set up to optionally download and process a Wikipedia dump. Update the following configuration variables as needed:
+In the UI, click the **"Scarica e carica dump Wikipedia"** button to:
+- Download and process the Wikipedia dump.
+- Parse, chunk, and update both the document and keyword vector stores.
+- The updated data is stored in `Wikipedia.csv` and loaded into ChromaDB-backed collections.
 
-- **DUMP_URL:**  
-  `https://dumps.wikimedia.org/itwiki/latest/itwiki-latest-pages-articles-multistream-index1.txt-p1p316052.bz2`
-- **DUMP_FILE:**  
-  `Data/itwiki-latest-pages-articles.xml.bz2`  
-  *(Change this to the local path of your dump file.)*
-- **OUTPUT_DIR:**  
-  `Data`  
-  *(Change this to your desired output directory.)*
-- **BASE_DIR:**  
-  `Data`
+## Future Improvements
 
-## Future Improvements (TODO)
+- **Wikipedia Dump Pipeline v2:**  
+  Download the full dump of italian wikipedia, split in multiple vector and load it only after we find a match in the keyword vectorstore.
 
-- **Wikipedia Dump Pipeline:**  
-  Integrate a full pipeline to download the Wikipedia dump and update the vector stores (using ChromaDB) by adding or modifying documents.
 - **Enhanced UI:**  
-  Add a chat history feature for better user interaction.
+  Implement a chat history feature for improved user interaction.
 - **Improved Text Processing:**  
-  Refine the splitting and chunking of Wikipedia articles for more accurate retrieval.
+  Further refine article chunking for better retrieval accuracy.
 
-```
+## Additional Notes
+
+- **VectorStore:**  
+  The `VectorStore` class in `VectorStore.py` manages two separate collections:
+  - **Document Collection (`wikipedia_docs`):** Stores individual text chunks.
+  - **Keyword Collection (`wikipedia_keywords`):** Stores article titles with associated chunk IDs.
+  
+- **Search Functionality:**  
+  The `Search` class (in `search.py`) provides methods for semantic retrieval (from document chunks) and keyword-based retrieval.
+
+By following these instructions, you'll have a fully functional Wiki-RAG system that integrates both document and keyword vector stores, and communicates with a local LLM via LM Studio.
